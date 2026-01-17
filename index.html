@@ -1,150 +1,133 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Карпати: Совет Мудрецов (Prototype)</title>
-    <style>
-        :root { --bg: #1e1e1e; --text: #e0e0e0; --card: #2d2d2d; --accent: #4CAF50; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 1400px; margin: 0 auto; }
-        
-        /* Layout */
-        .controls { background: var(--card); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
-        .verdict-box { background: #252535; border: 1px solid #4a4a6a; padding: 20px; border-radius: 10px; }
-        
-        /* Elements */
-        .card { background: var(--card); padding: 15px; border-radius: 8px; border-top: 4px solid #555; height: 100%; }
-        .card h3 { margin-top: 0; color: #aaa; font-size: 0.9em; text-transform: uppercase; }
-        textarea, input { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; box-sizing: border-box; }
-        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { opacity: 0.9; }
-        button:disabled { background: #555; cursor: not-allowed; }
-        
-        /* Status & Loading */
-        .response-text { white-space: pre-wrap; font-size: 0.9em; line-height: 1.5; min-height: 100px; }
-        .loading { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        
-        .role-bull { border-color: #4CAF50; } /* Зеленый */
-        .role-bear { border-color: #F44336; } /* Красный */
-        .role-tech { border-color: #2196F3; } /* Синий */
-    </style>
+  <meta charset="UTF-8" />
+  <title>Совет Мудрецов (Secure)</title>
+  <style>
+    :root { --bg:#1e1e1e; --text:#e0e0e0; --card:#2d2d2d; --accent:#4CAF50; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 1400px; margin: 0 auto; }
+    .controls { background: var(--card); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+    .verdict-box { background: #252535; border: 1px solid #4a4a6a; padding: 20px; border-radius: 10px; }
+    .card { background: var(--card); padding: 15px; border-radius: 8px; border-top: 4px solid #555; height: 100%; }
+    .card h3 { margin-top: 0; color: #aaa; font-size: 0.9em; text-transform: uppercase; }
+    textarea, select, input { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; box-sizing: border-box; }
+    button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    button:hover { opacity: 0.9; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    .response-text { white-space: pre-wrap; font-size: 0.9em; line-height: 1.5; min-height: 100px; }
+    .loading { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%{opacity:.5} 50%{opacity:1} 100%{opacity:.5} }
+    .role-bull { border-color: #4CAF50; }
+    .role-bear { border-color: #F44336; }
+    .role-tech { border-color: #2196F3; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+    small { color:#888; }
+  </style>
 </head>
 <body>
 
-    <h1>🏛 Совет Мудрецов (Архитектура Андрея Карпатого)</h1>
+<h1>🏛 Совет Мудрецов (Secure)</h1>
 
-    <div class="controls">
-        <div style="margin-bottom: 10px;">
-            <label>OpenAI API Key:</label>
-            <input type="password" id="apiKey" placeholder="sk-..." value="">
-            <small style="color: #888;">Ключ хранится только в вашем браузере.</small>
-        </div>
-        <div>
-            <label>Вопрос Совету:</label>
-            <textarea id="userPrompt" rows="3" placeholder="Например: Стоит ли сейчас продавать путы на SPY?"></textarea>
-        </div>
-        <button onclick="startCouncil()" id="runBtn">Созвать Совет</button>
+<div class="controls">
+  <label>Вопрос Совету:</label>
+  <textarea id="userPrompt" rows="3" placeholder="Например: Проанализируй риск продажи путов на SPY при IV 12%"></textarea>
+
+  <div class="row">
+    <div>
+      <label>Режим:</label>
+      <select id="mode">
+        <option value="options">Options</option>
+        <option value="ticker">Ticker</option>
+        <option value="macro">Macro</option>
+        <option value="custom">Custom</option>
+      </select>
+      <small>Режим влияет на “судью” и формулировки ролей на сервере.</small>
     </div>
-
-    <div class="grid">
-        <div class="card role-bull">
-            <h3>📈 The Bull (Оптимист)</h3>
-            <div id="resp1" class="response-text">Ожидание...</div>
-        </div>
-
-        <div class="card role-bear">
-            <h3>📉 The Bear (Риск-менеджер)</h3>
-            <div id="resp2" class="response-text">Ожидание...</div>
-        </div>
-
-        <div class="card role-tech">
-            <h3>💻 The Quant (Технарь)</h3>
-            <div id="resp3" class="response-text">Ожидание...</div>
-        </div>
+    <div>
+      <label>Уровень строгости критики (Roast):</label>
+      <select id="harshness">
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+        <option value="nuclear">Nuclear</option>
+      </select>
+      <small>На сервере это меняет “тон” критики.</small>
     </div>
+  </div>
 
-    <div class="verdict-box">
-        <h3>⚖️ Итоговый Вердикт (Председатель)</h3>
-        <div id="verdict" class="response-text">Здесь появится синтез мнений после дебатов...</div>
-    </div>
+  <button onclick="startCouncil()" id="runBtn">Созвать Совет</button>
+  <div style="margin-top:8px;"><small>Ключей здесь нет. Всё исполняется на вашем backend.</small></div>
+</div>
+
+<div class="grid">
+  <div class="card role-bull">
+    <h3>📈 The Bull (Оптимист)</h3>
+    <div id="resp1" class="response-text">Ожидание...</div>
+  </div>
+
+  <div class="card role-bear">
+    <h3>📉 The Bear (Риск-менеджер)</h3>
+    <div id="resp2" class="response-text">Ожидание...</div>
+  </div>
+
+  <div class="card role-tech">
+    <h3>💻 The Quant (Технарь)</h3>
+    <div id="resp3" class="response-text">Ожидание...</div>
+  </div>
+</div>
+
+<div class="verdict-box">
+  <h3>⚖️ Итоговый Вердикт (Председатель)</h3>
+  <div id="verdict" class="response-text">Здесь появится синтез мнений после дебатов...</div>
+</div>
 
 <script>
-    // Системные промпты для разных ролей
-    const roles = [
-        { id: 'resp1', role: 'Ты опытный инвестор, ориентированный на РОСТ. Ищи возможности, позитивные тренды и потенциал прибыли. Будь убедителен.' },
-        { id: 'resp2', role: 'Ты строгий РИСК-МЕНЕДЖЕР. Твоя задача — найти слабые места, угрозы, переоцененность и регуляторные риски. Будь скептичен.' },
-        { id: 'resp3', role: 'Ты QUANT-аналитик. Тебя не волнуют эмоции, только цифры, волатильность, греки опционов и технический анализ. Будь краток и точен.' }
-    ];
+  function setLoading() {
+    document.getElementById('resp1').innerHTML = '<span class="loading">Анализирую...</span>';
+    document.getElementById('resp2').innerHTML = '<span class="loading">Анализирую...</span>';
+    document.getElementById('resp3').innerHTML = '<span class="loading">Анализирую...</span>';
+    document.getElementById('verdict').innerHTML = '<span class="loading">Судья пишет заключение...</span>';
+  }
 
-    async function callLLM(apiKey, systemPrompt, userPrompt) {
-        const url = "https://api.openai.com/v1/chat/completions";
-        
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: "gpt-4o-mini", // Используем быструю модель для теста
-                    messages: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: userPrompt }
-                    ],
-                    temperature: 0.7
-                })
-            });
-            const data = await response.json();
-            if (data.error) throw new Error(data.error.message);
-            return data.choices[0].message.content;
-        } catch (error) {
-            return `Ошибка: ${error.message}`;
-        }
+  async function startCouncil() {
+    const prompt = document.getElementById('userPrompt').value.trim();
+    const mode = document.getElementById('mode').value;
+    const harshness = document.getElementById('harshness').value;
+    const btn = document.getElementById('runBtn');
+
+    if (!prompt) { alert('Введите вопрос!'); return; }
+
+    btn.disabled = true;
+    btn.innerText = "Совет совещается...";
+    setLoading();
+
+    try {
+      const res = await fetch("/api/council", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          mode,
+          harshness,
+          // Можно добавить: tickers, iv, horizon, constraints, etc.
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || "Ошибка backend");
+
+      document.getElementById('resp1').innerText = data?.agents?.bull?.final || "—";
+      document.getElementById('resp2').innerText = data?.agents?.bear?.final || "—";
+      document.getElementById('resp3').innerText = data?.agents?.quant?.final || "—";
+      document.getElementById('verdict').innerText = data?.verdict || "—";
+
+    } catch (e) {
+      document.getElementById('verdict').innerText = "Ошибка: " + e.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "Созвать Совет";
     }
-
-    async function startCouncil() {
-        const key = document.getElementById('apiKey').value;
-        const prompt = document.getElementById('userPrompt').value;
-        const btn = document.getElementById('runBtn');
-        
-        if (!key) { alert('Введите API Key!'); return; }
-        if (!prompt) { alert('Введите вопрос!'); return; }
-
-        btn.disabled = true;
-        btn.innerText = "Совет совещается...";
-        
-        // Очистка полей
-        roles.forEach(r => document.getElementById(r.id).innerHTML = '<span class="loading">Анализирую...</span>');
-        document.getElementById('verdict').innerHTML = '<span class="loading">Ожидание аргументов...</span>';
-
-        // 1. ПАРАЛЛЕЛЬНЫЙ ЗАПУСК 3 АГЕНТОВ
-        const promises = roles.map(r => callLLM(key, r.role, prompt));
-        
-        // Ждем всех троих
-        const results = await Promise.all(promises);
-
-        // Выводим результаты
-        let combinedDebate = "";
-        results.forEach((res, index) => {
-            document.getElementById(roles[index].id).innerText = res;
-            // Собираем текст для финального судьи
-            combinedDebate += `\n[МНЕНИЕ ${index+1}]: ${res}\n`;
-        });
-
-        // 2. СИНТЕЗ (ВЕРДИКТ)
-        document.getElementById('verdict').innerHTML = '<span class="loading">Председатель пишет заключение...</span>';
-        
-        const judgeSystemPrompt = "Ты Председатель Совета Мудрецов. Прочитай мнения трех экспертов (Быка, Медведя и Кванта). Твоя задача — синтезировать взвешенное решение. Укажи, в чем эксперты согласны, а где есть противоречия. Дай финальную рекомендацию.";
-        const judgePrompt = `Вопрос пользователя: "${prompt}".\n\nВот мнения экспертов:\n${combinedDebate}`;
-
-        const finalVerdict = await callLLM(key, judgeSystemPrompt, judgePrompt);
-        document.getElementById('verdict').innerText = finalVerdict;
-
-        btn.disabled = false;
-        btn.innerText = "Созвать Совет";
-    }
+  }
 </script>
 
 </body>
