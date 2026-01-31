@@ -727,8 +727,8 @@
       const pr = Array.isArray(s?.p_range_pct) ? (s.p_range_pct[0] + "–" + s.p_range_pct[1]) : "—";
       const nar = (s?.narrative || "—");
       const cons = (s?.consequences || "—");
-      const conf = Array.isArray(s?.confirm_triggers) ? s.confirm_triggers.join("\\n") : (s?.confirm_triggers || "—");
-      const inv = Array.isArray(s?.invalidate_triggers) ? s.invalidate_triggers.join("\\n") : (s?.invalidate_triggers || "—");
+      const conf = Array.isArray(s?.confirm_triggers) ? s.confirm_triggers.join("\n") : (s?.confirm_triggers || "—");
+      const inv = Array.isArray(s?.invalidate_triggers) ? s.invalidate_triggers.join("\n") : (s?.invalidate_triggers || "—");
 
       html += '<tr>' +
         `<td><b>${escapeHtml(name)}</b></td>` +
@@ -939,10 +939,10 @@
 
       for(const r of data){
         const rid = r?.run_id || "";
-        const safeRid = String(rid).replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\\\\'");
+        const safeRid = String(rid).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
         const pdfPath = r?.result_ref?.pdf_path || r?.pdf_path;
         const pdf = pdfPath ? "есть" : "—";
-        html += '<tr style="cursor:pointer" onclick="selectRunId(\\'' + safeRid + '\\')">' +
+        html += '<tr style="cursor:pointer" onclick="selectRunId(\'' + safeRid + '\')">' +
           `<td>${escapeHtml(r?.created_at || "—")}</td>` +
           `<td><b>${escapeHtml(rid)}</b></td>` +
           `<td>${escapeHtml(r?.status || "—")}</td>` +
