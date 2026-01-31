@@ -2,133 +2,982 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Совет Мудрецов (Secure)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Инвесткомитет Wisdom (Secure)</title>
   <style>
-    :root { --bg:#1e1e1e; --text:#e0e0e0; --card:#2d2d2d; --accent:#4CAF50; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 1400px; margin: 0 auto; }
-    .controls { background: var(--card); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
-    .verdict-box { background: #252535; border: 1px solid #4a4a6a; padding: 20px; border-radius: 10px; }
-    .card { background: var(--card); padding: 15px; border-radius: 8px; border-top: 4px solid #555; height: 100%; }
-    .card h3 { margin-top: 0; color: #aaa; font-size: 0.9em; text-transform: uppercase; }
-    textarea, select, input { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; box-sizing: border-box; }
-    button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-    button:hover { opacity: 0.9; }
-    button:disabled { background: #555; cursor: not-allowed; }
-    .response-text { white-space: pre-wrap; font-size: 0.9em; line-height: 1.5; min-height: 100px; }
-    .loading { color: #888; font-style: italic; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%{opacity:.5} 50%{opacity:1} 100%{opacity:.5} }
-    .role-bull { border-color: #4CAF50; }
-    .role-bear { border-color: #F44336; }
-    .role-tech { border-color: #2196F3; }
-    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-    small { color:#888; }
+    :root{
+      --bg:#0f1116;
+      --panel:#151925;
+      --panel2:#0c0f18;
+      --border:#252b3a;
+      --text:#e7eaf0;
+      --muted:#9aa3b2;
+      --accent:#7c5cff;
+      --good:#4CAF50;
+      --warn:#ffb020;
+      --bad:#F44336;
+      --info:#2aa9ff;
+      --mono: ui-monospace, Menlo, Consolas, "SFMono-Regular", monospace;
+      --radius:12px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      margin:0;
+      padding:18px;
+    }
+    .wrap{ max-width: 1320px; margin:0 auto; }
+    h1{ margin:0 0 10px; font-size: 22px; }
+    h2{ margin:0 0 10px; font-size: 16px; color: var(--text); }
+    h3{ margin:0 0 10px; font-size: 14px; color: var(--text); }
+    p{ margin:8px 0; }
+    a{ color:#9bd1ff; text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:14px;
+      margin-bottom:12px;
+    }
+
+    .muted{ color:var(--muted); font-size:12px; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:8px 0 6px; }
+    input, textarea, select{
+      width:100%;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px;
+      border-radius:10px;
+      outline:none;
+    }
+    textarea{ resize:vertical; }
+    button{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--accent);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button.secondary{
+      background:var(--panel2);
+    }
+    button:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+    .row4{ display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; }
+    @media (max-width: 1050px){
+      .row4{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 740px){
+      .row, .row3, .row4{ grid-template-columns: 1fr; }
+      body{ padding:12px; }
+    }
+
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .toolbar button{ margin-top:0; }
+
+    pre{
+      white-space:pre-wrap;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      padding:10px;
+      border-radius:10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.45;
+      overflow:auto;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      font-size:12px;
+      color:var(--muted);
+    }
+    .dot{ width:9px; height:9px; border-radius:50%; background:var(--muted); display:inline-block; }
+    .dot.good{ background: var(--good); }
+    .dot.warn{ background: var(--warn); }
+    .dot.bad{ background: var(--bad); }
+    .dot.info{ background: var(--info); }
+
+    .gridRoles{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
+    @media (max-width: 1100px){
+      .gridRoles{ grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 740px){
+      .gridRoles{ grid-template-columns: 1fr; }
+    }
+    .roleCard{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:12px;
+      min-height: 140px;
+      border-top: 4px solid #555;
+    }
+    .roleCard.optimist{ border-top-color: var(--good); }
+    .roleCard.pessimist{ border-top-color: var(--bad); }
+    .roleCard.realist{ border-top-color: var(--info); }
+    .roleCard.quant{ border-top-color: #b56cff; }
+    .roleCard h3{
+      margin:0 0 8px;
+      font-size: 12px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      color: var(--muted);
+    }
+    .roleText{
+      white-space:pre-wrap;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text);
+      min-height: 110px;
+    }
+    .loading{
+      color: var(--muted);
+      font-style: italic;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse{ 0%{opacity:.5} 50%{opacity:1} 100%{opacity:.5} }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background:var(--panel2);
+    }
+    th, td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+      vertical-align:top;
+      text-align:left;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    th{ color: var(--muted); background: rgba(255,255,255,0.03); }
+    tr:last-child td{ border-bottom:none; }
+
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .tab{
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--panel2);
+      cursor:pointer;
+      font-size:12px;
+      color:var(--muted);
+      user-select:none;
+    }
+    .tab.active{
+      background:rgba(124,92,255,0.18);
+      color:var(--text);
+      border-color: rgba(124,92,255,0.45);
+    }
+    .hidden{ display:none; }
+
+    .note{
+      border-left: 3px solid rgba(124,92,255,0.7);
+      padding-left: 12px;
+      margin: 10px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .checkboxRow{ display:flex; gap:10px; align-items:center; }
+    .checkboxRow input{ width:auto; }
+    .smallBtn{
+      padding:7px 10px;
+      font-weight:600;
+      font-size:12px;
+    }
   </style>
 </head>
 <body>
+<div class="wrap">
+  <h1>🏛 Инвесткомитет Wisdom (Secure)</h1>
+  <div class="muted">UI без ключей. Всё исполняется на вашем backend. Flow: Estimate → Run → Review → Approve → PDF (+ история прогонов).</div>
 
-<h1>🏛 Совет Мудрецов (Secure)</h1>
+  <!-- INPUTS -->
+  <div class="card">
+    <h2>1) Запрос и вводные (inputs)</h2>
 
-<div class="controls">
-  <label>Вопрос Совету:</label>
-  <textarea id="userPrompt" rows="3" placeholder="Например: Проанализируй риск продажи путов на SPY при IV 12%"></textarea>
-
-  <div class="row">
-    <div>
-      <label>Режим:</label>
-      <select id="mode">
-        <option value="options">Options</option>
-        <option value="ticker">Ticker</option>
-        <option value="macro">Macro</option>
-        <option value="custom">Custom</option>
-      </select>
-      <small>Режим влияет на “судью” и формулировки ролей на сервере.</small>
+    <div class="row">
+      <div>
+        <label>Тикер(а) / Symbols (через запятую)</label>
+        <input id="symbols" value="AAPL" placeholder="Например: AAPL или AAPL,MSFT" />
+      </div>
+      <div>
+        <label>Режим (mode)</label>
+        <select id="mode">
+          <option value="ticker" selected>Ticker</option>
+          <option value="options">Options</option>
+          <option value="macro">Macro</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
     </div>
-    <div>
-      <label>Уровень строгости критики (Roast):</label>
-      <select id="harshness">
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-        <option value="nuclear">Nuclear</option>
-      </select>
-      <small>На сервере это меняет “тон” критики.</small>
+
+    <label>Вопрос / prompt</label>
+    <textarea id="prompt" rows="3" placeholder="Например: Сделай FULL протокол Инвесткомитета по AAPL. Горизонт 12 месяцев, USD. Бенчмарк: XLK и SPY."></textarea>
+
+    <div class="row4" style="margin-top:10px;">
+      <div>
+        <label>Output Mode (requested)</label>
+        <select id="outmode">
+          <option value="AUTO" selected>AUTO</option>
+          <option value="FULL_PROTOCOL">FULL_PROTOCOL</option>
+          <option value="ONE_PAGER">ONE_PAGER</option>
+        </select>
+        <div class="muted">AUTO может переключить в ONE_PAGER при превышении бюджета.</div>
+      </div>
+      <div>
+        <label>Quant Mode</label>
+        <select id="qmode">
+          <option value="AUTO" selected>AUTO</option>
+          <option value="ON">ON</option>
+          <option value="OFF">OFF</option>
+        </select>
+        <div class="muted">AUTO включает Quant при деривативах или запросе цифр/графиков.</div>
+      </div>
+      <div>
+        <label>Строгость критики (harshness)</label>
+        <select id="harshness">
+          <option value="medium">medium</option>
+          <option value="hard" selected>hard</option>
+          <option value="nuclear">nuclear</option>
+        </select>
+      </div>
+      <div>
+        <label>Макс. раундов</label>
+        <select id="maxRounds">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <div>
+        <label>Горизонт (horizon_days)</label>
+        <div class="row">
+          <select id="horizonPreset" onchange="applyHorizonPreset()">
+            <option value="custom" selected>Своя длительность</option>
+            <option value="90">~3 месяца (90d)</option>
+            <option value="270">~6–12 месяцев (270d)</option>
+            <option value="730">~1–3 года (730d)</option>
+            <option value="1460">~3–5 лет (1460d)</option>
+          </select>
+          <input id="horizonDays" type="number" min="1" value="365" />
+        </div>
+        <div class="muted">Если не задать — агент обязан запросить уточнения (в идеале).</div>
+      </div>
+      <div>
+        <label>Валюта (currency)</label>
+        <input id="currency" value="USD" />
+      </div>
+    </div>
+
+    <div class="row3" style="margin-top:10px;">
+      <div>
+        <label>Бенчмарк: секторный ETF (benchmarks.sector)</label>
+        <input id="bmSector" value="XLK" placeholder="Например: XLK" />
+      </div>
+      <div>
+        <label>Бенчмарк: широкий рынок (benchmarks.broad)</label>
+        <input id="bmBroad" value="SPY" placeholder="Например: SPY" />
+      </div>
+      <div>
+        <label>Budget confirm</label>
+        <div class="checkboxRow">
+          <input id="budgetOk" type="checkbox" />
+          <div class="muted">Подтверждаю перерасход бюджета (если cost guard сработает).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <div>
+        <label>Constraints (JSON, опционально)</label>
+        <textarea id="constraintsJson" rows="3" placeholder='Например: {"no_leverage":true,"esg":false}'></textarea>
+        <div class="muted">Это общие ограничения политики инструмента, не персонализация.</div>
+      </div>
+      <div>
+        <label>Data pack overrides (JSON, опционально)</label>
+        <textarea id="overridesJson" rows="3" placeholder='Для manual/MVP можно подложить числа сюда (если backend это поддерживает).'></textarea>
+        <div class="muted">Если backend не поддерживает — поле будет проигнорировано.</div>
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-top:10px;">
+      <button class="secondary" onclick="estimate()">Estimate Cost</button>
+      <button onclick="createRun()">Run Committee</button>
+      <button class="secondary smallBtn" onclick="copyRunId()" id="copyBtn" disabled>Copy run_id</button>
+      <span class="muted" id="uiMsg" style="margin-left:auto;"></span>
+    </div>
+
+    <div class="note">
+      Важно: если Data Pack отсутствует/некачественный, корректное поведение — переход в режим <b>NEED_DATA_PACK</b> (без выдумок).
     </div>
   </div>
 
-  <button onclick="startCouncil()" id="runBtn">Созвать Совет</button>
-  <div style="margin-top:8px;"><small>Ключей здесь нет. Всё исполняется на вашем backend.</small></div>
-</div>
-
-<div class="grid">
-  <div class="card role-bull">
-    <h3>📈 The Bull (Оптимист)</h3>
-    <div id="resp1" class="response-text">Ожидание...</div>
+  <!-- ESTIMATE -->
+  <div class="card">
+    <h2>2) Оценка стоимости (Cost Guard)</h2>
+    <div class="muted">Зависит от pricing.yaml и моделей. Если нет прайса — стоимость может быть N/A.</div>
+    <pre id="estBox">—</pre>
   </div>
 
-  <div class="card role-bear">
-    <h3>📉 The Bear (Риск-менеджер)</h3>
-    <div id="resp2" class="response-text">Ожидание...</div>
+  <!-- CURRENT RUN -->
+  <div class="card">
+    <h2>3) Текущий прогон</h2>
+    <div class="toolbar">
+      <button class="secondary" onclick="refresh()">Refresh</button>
+      <button class="secondary" onclick="loadResult()">Load Result</button>
+      <button class="secondary" onclick="approve()">Approve edits</button>
+      <button onclick="genPdf()" id="pdfBtn">Generate PDF</button>
+      <button class="secondary" onclick="openPdf()" id="openPdfBtn">Open PDF</button>
+    </div>
+
+    <div style="margin-top:10px;">
+      <span class="badge"><span class="dot info"></span><span id="badgeRun">run_id: —</span></span>
+      <span class="badge"><span class="dot info"></span><span id="badgeStatus">status: —</span></span>
+      <span class="badge"><span class="dot info"></span><span id="badgeMode">output_mode: —</span></span>
+      <span class="badge"><span class="dot info"></span><span id="badgeQuant">quant: —</span></span>
+      <span class="badge"><span class="dot info"></span><span id="badgeDP">data_pack: —</span></span>
+      <span class="badge"><span class="dot info"></span><span id="badgeTrad">tradability: —</span></span>
+      <span class="badge"><span class="dot info"></span><span id="badgeVal">validators: —</span></span>
+    </div>
+
+    <pre id="runBox" style="margin-top:10px;">—</pre>
   </div>
 
-  <div class="card role-tech">
-    <h3>💻 The Quant (Технарь)</h3>
-    <div id="resp3" class="response-text">Ожидание...</div>
-  </div>
-</div>
+  <!-- TABS: PROTOCOL VIEW vs RAW JSON -->
+  <div class="card">
+    <h2>4) Результат</h2>
+    <div class="tabs">
+      <div class="tab active" id="tabProtocol" onclick="setTab('protocol')">Protocol view</div>
+      <div class="tab" id="tabJson" onclick="setTab('json')">Raw JSON</div>
+    </div>
 
-<div class="verdict-box">
-  <h3>⚖️ Итоговый Вердикт (Председатель)</h3>
-  <div id="verdict" class="response-text">Здесь появится синтез мнений после дебатов...</div>
+    <!-- PROTOCOL VIEW -->
+    <div id="viewProtocol">
+      <div class="card" style="background:transparent; border:none; padding:0; margin:0 0 12px;">
+        <h3>4.1 Комитет: роли</h3>
+        <div class="gridRoles">
+          <div class="roleCard optimist">
+            <h3>📈 Оптимист (Bull)</h3>
+            <div id="roleOptimist" class="roleText">Ожидание...</div>
+          </div>
+          <div class="roleCard pessimist">
+            <h3>📉 Пессимист (Bear)</h3>
+            <div id="rolePessimist" class="roleText">Ожидание...</div>
+          </div>
+          <div class="roleCard realist">
+            <h3>🧭 Реалист (Base)</h3>
+            <div id="roleRealist" class="roleText">Ожидание...</div>
+          </div>
+          <div class="roleCard quant">
+            <h3>🧮 Quant (числа/графики)</h3>
+            <div id="roleQuant" class="roleText">Ожидание...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background:transparent; border:none; padding:0; margin:0;">
+        <h3>4.2 Судья: вердикт</h3>
+        <pre id="verdictBox">Здесь появится вердикт (Judge) после загрузки результата…</pre>
+      </div>
+
+      <div class="card" style="background:transparent; border:none; padding:0; margin:0;">
+        <h3>4.3 Гейты (Data Pack / Tradability / Macro) — кратко</h3>
+        <div class="row3">
+          <div class="card" style="margin:0;">
+            <div class="muted">Data Pack</div>
+            <pre id="gatesDataPack">—</pre>
+          </div>
+          <div class="card" style="margin:0;">
+            <div class="muted">Tradability</div>
+            <pre id="gatesTradability">—</pre>
+          </div>
+          <div class="card" style="margin:0;">
+            <div class="muted">Macro next 14d / risk windows</div>
+            <pre id="gatesMacro">—</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background:transparent; border:none; padding:0; margin:0;">
+        <h3>4.4 Сценарная матрица (из Decision Card)</h3>
+        <div class="muted">Вероятности — диапазонами (%), шаг 5–10%. Диапазоны должны быть совместимы с 100%.</div>
+        <div id="scenariosTableWrap" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="background:transparent; border:none; padding:0; margin:0;">
+        <h3>4.5 Issues Table (спорные пункты)</h3>
+        <div id="issuesTableWrap" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="background:transparent; border:none; padding:0; margin:0;">
+        <h3>4.6 Рамка buy/hold/sell (условия, не приказ)</h3>
+        <div id="decisionFrameWrap" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- RAW JSON VIEW -->
+    <div id="viewJson" class="hidden">
+      <div class="muted">Run Result JSON (draft/approved). Удобно для дебага валидаторов и артефактов.</div>
+      <pre id="resultJsonBox">—</pre>
+    </div>
+  </div>
+
+  <!-- REVIEW MODE -->
+  <div class="card">
+    <h2>5) Review Mode</h2>
+    <div class="muted">Правите только Verdict и Decision Card (JSON). Потом <b>Approve</b>. PDF должен генерироваться только из approved версии и при PASS валидаторов.</div>
+    <label>Verdict (editable)</label>
+    <textarea id="verdictEdit" rows="8" placeholder="Загрузите результат и при необходимости отредактируйте вердикт…"></textarea>
+    <label>Decision Card JSON (editable)</label>
+    <textarea id="dcEdit" rows="14" style="font-family: var(--mono);" placeholder="Загрузите результат, чтобы увидеть Decision Card…"></textarea>
+    <div class="toolbar" style="margin-top:10px;">
+      <button class="secondary" onclick="loadResult()">Reload from backend</button>
+      <button onclick="approve()">Approve edits</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card">
+    <h2>6) История прогонов</h2>
+    <div class="toolbar">
+      <button class="secondary" onclick="loadHistory()">Refresh history</button>
+      <span class="muted">Клик по строке подставит run_id сверху.</span>
+    </div>
+    <div id="historyWrap" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="muted">
+      Дисклеймер: интерфейс предназначен для аналитики и обсуждения. Не является индивидуальной инвестиционной рекомендацией.
+    </div>
+  </div>
 </div>
 
 <script>
-  function setLoading() {
-    document.getElementById('resp1').innerHTML = '<span class="loading">Анализирую...</span>';
-    document.getElementById('resp2').innerHTML = '<span class="loading">Анализирую...</span>';
-    document.getElementById('resp3').innerHTML = '<span class="loading">Анализирую...</span>';
-    document.getElementById('verdict').innerHTML = '<span class="loading">Судья пишет заключение...</span>';
+  let RUN_ID = null;
+  let LAST_RUN_STATUS = null;
+
+  function uiMessage(text, type="info"){
+    const el = document.getElementById("uiMsg");
+    el.textContent = text || "";
   }
 
-  async function startCouncil() {
-    const prompt = document.getElementById('userPrompt').value.trim();
-    const mode = document.getElementById('mode').value;
-    const harshness = document.getElementById('harshness').value;
-    const btn = document.getElementById('runBtn');
+  function setTab(which){
+    const protocol = document.getElementById("viewProtocol");
+    const json = document.getElementById("viewJson");
+    const tabP = document.getElementById("tabProtocol");
+    const tabJ = document.getElementById("tabJson");
+    if(which === "json"){
+      protocol.classList.add("hidden");
+      json.classList.remove("hidden");
+      tabP.classList.remove("active");
+      tabJ.classList.add("active");
+    } else {
+      json.classList.add("hidden");
+      protocol.classList.remove("hidden");
+      tabJ.classList.remove("active");
+      tabP.classList.add("active");
+    }
+  }
 
-    if (!prompt) { alert('Введите вопрос!'); return; }
+  function setLoadingProtocol(){
+    const loading = '<span class="loading">Анализирую…</span>';
+    document.getElementById("roleOptimist").innerHTML = loading;
+    document.getElementById("rolePessimist").innerHTML = loading;
+    document.getElementById("roleRealist").innerHTML = loading;
+    document.getElementById("roleQuant").innerHTML = loading;
+    document.getElementById("verdictBox").textContent = "Судья пишет заключение…";
+    document.getElementById("gatesDataPack").textContent = "—";
+    document.getElementById("gatesTradability").textContent = "—";
+    document.getElementById("gatesMacro").textContent = "—";
+    document.getElementById("scenariosTableWrap").innerHTML = "";
+    document.getElementById("issuesTableWrap").innerHTML = "";
+    document.getElementById("decisionFrameWrap").innerHTML = "";
+  }
 
-    btn.disabled = true;
-    btn.innerText = "Совет совещается...";
-    setLoading();
+  function applyHorizonPreset(){
+    const preset = document.getElementById("horizonPreset").value;
+    if(preset && preset !== "custom"){
+      document.getElementById("horizonDays").value = preset;
+    }
+  }
 
-    try {
-      const res = await fetch("/api/council", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+  function safeJsonParse(text, fallback){
+    const s = (text || "").trim();
+    if(!s) return fallback;
+    try { return JSON.parse(s); }
+    catch(e){ return {__parse_error: e.message, __raw: s}; }
+  }
+
+  function payloadBase(){
+    const symbols = document.getElementById("symbols").value
+      .split(",").map(s => s.trim()).filter(Boolean);
+
+    const constraintsParsed = safeJsonParse(document.getElementById("constraintsJson").value, {});
+    const overridesParsed = safeJsonParse(document.getElementById("overridesJson").value, {});
+
+    const payload = {
+      mode: document.getElementById("mode").value,
+      symbols,
+      prompt: document.getElementById("prompt").value.trim(),
+      harshness: document.getElementById("harshness").value,
+    };
+
+    // Optional inputs block (по ТЗ)
+    const horizon_days = parseInt(document.getElementById("horizonDays").value, 10);
+    const currency = document.getElementById("currency").value.trim() || "USD";
+    const sector = document.getElementById("bmSector").value.trim();
+    const broad = document.getElementById("bmBroad").value.trim() || "SPY";
+
+    payload.inputs = {
+      horizon_days: isFinite(horizon_days) ? horizon_days : null,
+      currency: currency || null,
+      benchmarks: (sector || broad) ? { sector: sector || "", broad: broad || "SPY" } : null,
+      constraints: (constraintsParsed && !constraintsParsed.__parse_error) ? constraintsParsed : {},
+    };
+
+    payload.data_pack_overrides = (overridesParsed && !overridesParsed.__parse_error) ? overridesParsed : {};
+
+    payload.max_rounds = parseInt(document.getElementById("maxRounds").value, 10) || 3;
+    payload.requested_output_mode = document.getElementById("outmode").value;
+    payload.quant_mode = document.getElementById("qmode").value;
+    payload.budget_confirmed = document.getElementById("budgetOk").checked;
+
+    // UI warnings for JSON parse errors (не блокируем)
+    if(constraintsParsed && constraintsParsed.__parse_error){
+      uiMessage("⚠️ Constraints JSON невалиден — отправляю пустой объект.", "warn");
+      payload.inputs.constraints = {};
+    }
+    if(overridesParsed && overridesParsed.__parse_error){
+      uiMessage("⚠️ Overrides JSON невалиден — отправляю пустой объект.", "warn");
+      payload.data_pack_overrides = {};
+    }
+
+    return payload;
+  }
+
+  async function estimate(){
+    uiMessage("");
+    const p = payloadBase();
+    if(!p.prompt){ alert("Введите prompt"); return; }
+    if(!p.symbols.length){ alert("Введите тикер(а)"); return; }
+
+    document.getElementById("estBox").textContent = "Считаю…";
+    try{
+      const res = await fetch("/api/estimate", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
-          prompt,
-          mode,
-          harshness,
-          // Можно добавить: tickers, iv, horizon, constraints, etc.
+          mode: p.mode,
+          symbols: p.symbols,
+          prompt: p.prompt,
+          harshness: p.harshness
         })
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || "Ошибка backend");
+      if(!res.ok) throw new Error(data?.detail || "Estimate error");
+      document.getElementById("estBox").textContent = JSON.stringify(data, null, 2);
+    } catch(e){
+      document.getElementById("estBox").textContent = "Ошибка: " + e.message;
+    }
+  }
 
-      document.getElementById('resp1').innerText = data?.agents?.bull?.final || "—";
-      document.getElementById('resp2').innerText = data?.agents?.bear?.final || "—";
-      document.getElementById('resp3').innerText = data?.agents?.quant?.final || "—";
-      document.getElementById('verdict').innerText = data?.verdict || "—";
+  function setRunBadges(run){
+    const set = (id, text) => (document.getElementById(id).textContent = text);
+    set("badgeRun", "run_id: " + (RUN_ID || "—"));
+    set("badgeStatus", "status: " + (run?.status || "—"));
+    set("badgeMode", "output_mode: " + (run?.output_mode || "—"));
+    set("badgeQuant", "quant: " + (run?.quant_enabled ? "ON" : (run?.quant_enabled === false ? "OFF" : "—")));
+    set("badgeDP", "data_pack: " + (run?.data_pack_status || "—"));
+    set("badgeTrad", "tradability: " + (run?.tradability_status || "—"));
+    const v = run?.validators_ok;
+    set("badgeVal", "validators: " + (v === true ? "PASS" : (v === false ? "FAIL" : "—")));
 
-    } catch (e) {
-      document.getElementById('verdict').innerText = "Ошибка: " + e.message;
+    // Enable copy
+    const copyBtn = document.getElementById("copyBtn");
+    copyBtn.disabled = !RUN_ID;
+
+    // PDF button guard (лучше, но backend всё равно должен проверять)
+    const pdfBtn = document.getElementById("pdfBtn");
+    const openPdfBtn = document.getElementById("openPdfBtn");
+
+    const approvedPath = run?.result_ref?.approved_json_path;
+    const pdfPath = run?.result_ref?.pdf_path;
+
+    // По ТЗ: PDF генерируется только из approved версии и при PASS валидаторов
+    const canGeneratePdf = !!RUN_ID && (run?.validators_ok === true) && !!approvedPath;
+    pdfBtn.disabled = !canGeneratePdf;
+
+    // PDF можно открыть, только если он уже существует
+    const canOpenPdf = !!RUN_ID && !!pdfPath;
+    openPdfBtn.disabled = !canOpenPdf;
+  }
+
+  async function createRun(){
+    uiMessage("");
+    setLoadingProtocol();
+    const p = payloadBase();
+    if(!p.prompt){ alert("Введите prompt"); return; }
+    if(!p.symbols.length){ alert("Введите тикер(а)"); return; }
+
+    // UI feedback
+    document.getElementById("runBox").textContent = "Создаю run…";
+    document.getElementById("resultJsonBox").textContent = "—";
+
+    try{
+      const res = await fetch("/api/runs", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(p)
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data?.detail || "Run create error");
+      RUN_ID = data.run_id;
+      document.getElementById("runBox").textContent = JSON.stringify(data, null, 2);
+      setRunBadges(data);
+      uiMessage("✅ Run создан. Нажмите Refresh, пока status не станет review_pending / готов.", "info");
+      // auto refresh once
+      setTimeout(refresh, 700);
+    } catch(e){
+      document.getElementById("runBox").textContent = "Ошибка: " + e.message;
+      uiMessage("Ошибка создания прогона: " + e.message, "bad");
+    }
+  }
+
+  async function refresh(){
+    if(!RUN_ID){ alert("Нет run_id"); return; }
+    uiMessage("");
+    try{
+      const res = await fetch(`/api/runs/${RUN_ID}`);
+      const data = await res.json();
+      if(!res.ok) throw new Error(data?.detail || "Refresh error");
+      LAST_RUN_STATUS = data;
+      document.getElementById("runBox").textContent = JSON.stringify(data, null, 2);
+      setRunBadges(data);
+      if(data?.error){
+        uiMessage("⚠️ Backend error: " + data.error, "warn");
+      }
+    } catch(e){
+      document.getElementById("runBox").textContent = "Ошибка: " + e.message;
+      uiMessage("Ошибка Refresh: " + e.message, "bad");
+    }
+  }
+
+  function pickAgentText(agents, keys, field="final"){
+    if(!agents) return "";
+    for(const k of keys){
+      const a = agents[k];
+      if(a && typeof a === "object"){
+        const txt = a[field] || a["final"] || a["draft"] || "";
+        if(txt) return txt;
+      }
+      if(typeof a === "string" && a) return a;
+    }
+    return "";
+  }
+
+  function renderScenarioTable(decisionCard){
+    const scenarios = decisionCard?.scenarios || [];
+    if(!Array.isArray(scenarios) || scenarios.length === 0){
+      return '<div class="muted">Сценариев нет (или режим NEED_DATA_PACK).</div>';
+    }
+    let html = '<table><thead><tr>' +
+      '<th>Сценарий</th>' +
+      '<th>Вероятность (диапазон, %)</th>' +
+      '<th>Нарратив</th>' +
+      '<th>Последствия</th>' +
+      '<th>Триггеры подтверждения</th>' +
+      '<th>Триггеры опровержения/пересмотра</th>' +
+      '</tr></thead><tbody>';
+
+    for(const s of scenarios){
+      const name = s?.name ?? "—";
+      const pr = Array.isArray(s?.p_range_pct) ? (s.p_range_pct[0] + "–" + s.p_range_pct[1]) : "—";
+      const nar = (s?.narrative || "—");
+      const cons = (s?.consequences || "—");
+      const conf = Array.isArray(s?.confirm_triggers) ? s.confirm_triggers.join("\\n") : (s?.confirm_triggers || "—");
+      const inv = Array.isArray(s?.invalidate_triggers) ? s.invalidate_triggers.join("\\n") : (s?.invalidate_triggers || "—");
+
+      html += '<tr>' +
+        `<td><b>${escapeHtml(name)}</b></td>` +
+        `<td>${escapeHtml(pr)}</td>` +
+        `<td>${escapeHtml(nar)}</td>` +
+        `<td>${escapeHtml(cons)}</td>` +
+        `<td>${escapeHtml(conf)}</td>` +
+        `<td>${escapeHtml(inv)}</td>` +
+        '</tr>';
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function renderIssuesTable(issues){
+    if(!Array.isArray(issues) || issues.length === 0){
+      return '<div class="muted">Issues table отсутствует (или пусто).</div>';
+    }
+    let html = '<table><thead><tr>' +
+      '<th>Severity</th>' +
+      '<th>Category</th>' +
+      '<th>Who</th>' +
+      '<th>Statement</th>' +
+      '<th>Why it matters</th>' +
+      '<th>Fix / Check</th>' +
+      '</tr></thead><tbody>';
+    for(const it of issues){
+      html += '<tr>' +
+        `<td>${escapeHtml(it?.severity || "—")}</td>` +
+        `<td>${escapeHtml(it?.category || "—")}</td>` +
+        `<td>${escapeHtml(it?.who_flagged || "—")}</td>` +
+        `<td>${escapeHtml(it?.statement || "—")}</td>` +
+        `<td>${escapeHtml(it?.why_it_matters || "—")}</td>` +
+        `<td>${escapeHtml(it?.fix_or_check || "—")}</td>` +
+      '</tr>';
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function renderDecisionFrame(dc){
+    const frame = dc?.decision_frame || {};
+    const actionType = frame?.action_type || "—";
+    const buy = Array.isArray(frame?.buy_if) ? frame.buy_if : [];
+    const hold = Array.isArray(frame?.hold_if) ? frame.hold_if : [];
+    const sell = Array.isArray(frame?.sell_or_reduce_if) ? frame.sell_or_reduce_if : [];
+
+    const block = (title, arr) => {
+      const items = arr.length ? ("<ul>" + arr.map(x => `<li>${escapeHtml(x)}</li>`).join("") + "</ul>") : "<div class='muted'>—</div>";
+      return `<div class="card" style="margin:0;"><div class="muted">${escapeHtml(title)}</div>${items}</div>`;
+    };
+
+    return `
+      <div class="badge"><span class="dot info"></span><span>action_type: <b>${escapeHtml(actionType)}</b></span></div>
+      <div class="row3" style="margin-top:10px;">
+        ${block("Buy if", buy)}
+        ${block("Hold if", hold)}
+        ${block("Sell/Reduce if", sell)}
+      </div>
+    `;
+  }
+
+  function summarizeGates(resultJson){
+    const gates = resultJson?.gates || resultJson?.decision_card?.gates || {};
+    const dp = gates?.data_pack || {};
+    const trad = gates?.tradability || {};
+    const macro = gates?.macro || {};
+
+    document.getElementById("gatesDataPack").textContent = JSON.stringify(dp, null, 2) || "—";
+    document.getElementById("gatesTradability").textContent = JSON.stringify(trad, null, 2) || "—";
+    document.getElementById("gatesMacro").textContent = JSON.stringify(macro, null, 2) || "—";
+  }
+
+  function escapeHtml(str){
+    if(str === null || str === undefined) return "";
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  async function loadResult(){
+    if(!RUN_ID){ alert("Нет run_id"); return; }
+    uiMessage("");
+    setLoadingProtocol();
+    try{
+      const res = await fetch(`/api/runs/${RUN_ID}/result`);
+      const data = await res.json();
+      if(!res.ok) throw new Error(data?.detail || "Load result error");
+
+      // Raw JSON view
+      document.getElementById("resultJsonBox").textContent = JSON.stringify(data, null, 2);
+
+      // Populate review editor
+      document.getElementById("verdictEdit").value = data?.verdict || "";
+      document.getElementById("dcEdit").value = JSON.stringify(data?.decision_card || {}, null, 2);
+
+      // Protocol view: roles
+      const agents = data?.agents || {};
+      document.getElementById("roleOptimist").textContent = pickAgentText(agents, ["optimist","bull"], "final") || "—";
+      document.getElementById("rolePessimist").textContent = pickAgentText(agents, ["pessimist","bear"], "final") || "—";
+      document.getElementById("roleRealist").textContent = pickAgentText(agents, ["realist","base"], "final") || "—";
+      // Quant can be a text or object with result; show something useful
+      const q = agents?.quant;
+      let qText = "";
+      if(typeof q === "string") qText = q;
+      else if(q && typeof q === "object"){
+        qText = q.final || q.draft || (q.result ? JSON.stringify(q.result, null, 2) : "");
+      }
+      document.getElementById("roleQuant").textContent = qText || "—";
+
+      // Verdict
+      document.getElementById("verdictBox").textContent = data?.verdict || "—";
+
+      // Gates summary
+      summarizeGates(data);
+
+      // Decision Card extracted views
+      const dc = data?.decision_card || {};
+      document.getElementById("scenariosTableWrap").innerHTML = renderScenarioTable(dc);
+      document.getElementById("issuesTableWrap").innerHTML = renderIssuesTable(data?.issues_table);
+      document.getElementById("decisionFrameWrap").innerHTML = renderDecisionFrame(dc);
+
+      uiMessage("✅ Result загружен. Если нужно — правьте в Review Mode и жмите Approve.", "info");
+    } catch(e){
+      document.getElementById("verdictBox").textContent = "Ошибка: " + e.message;
+      document.getElementById("resultJsonBox").textContent = "Ошибка: " + e.message;
+      uiMessage("Ошибка загрузки результата: " + e.message, "bad");
     } finally {
-      btn.disabled = false;
-      btn.innerText = "Созвать Совет";
+      // update badges (status/validators) after loading result
+      refresh();
+    }
+  }
+
+  async function approve(){
+    if(!RUN_ID){ alert("Нет run_id"); return; }
+    uiMessage("");
+    let dc;
+    try{
+      dc = JSON.parse(document.getElementById("dcEdit").value || "{}");
+    } catch(e){
+      alert("Decision Card JSON невалиден. Исправьте и повторите.");
+      return;
+    }
+
+    try{
+      const res = await fetch(`/api/runs/${RUN_ID}/approve`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+          verdict_edited: document.getElementById("verdictEdit").value || "",
+          decision_card_edited: dc
+        })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data?.detail || "Approve error");
+      uiMessage("✅ Approved. Валидаторы должны быть перезапущены на стороне backend.", "info");
+      // Refresh status (validators_ok может измениться)
+      setTimeout(refresh, 400);
+    } catch(e){
+      uiMessage("Ошибка Approve: " + e.message, "bad");
+      alert("Approve error: " + e.message);
+    }
+  }
+
+  async function genPdf(){
+    if(!RUN_ID){ alert("Нет run_id"); return; }
+    uiMessage("");
+    try{
+      const res = await fetch(`/api/runs/${RUN_ID}/generate_pdf`, { method:"POST" });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data?.detail || "PDF generation blocked");
+      uiMessage("✅ PDF queued. Откройте PDF после статуса pdf_done.", "info");
+      setTimeout(refresh, 700);
+    } catch(e){
+      uiMessage("Ошибка PDF: " + e.message, "bad");
+      alert("PDF error: " + e.message);
+    }
+  }
+
+  function openPdf(){
+    if(!RUN_ID){ alert("Нет run_id"); return; }
+    window.open(`/api/runs/${RUN_ID}/pdf`, "_blank");
+  }
+
+  async function loadHistory(){
+    uiMessage("");
+    try{
+      const res = await fetch(`/api/runs?limit=30`);
+      const data = await res.json();
+      if(!res.ok) throw new Error(data?.detail || "History error");
+      if(!Array.isArray(data) || data.length === 0){
+        document.getElementById("historyWrap").innerHTML = "<div class='muted'>История пуста.</div>";
+        return;
+      }
+
+      let html = '<table><thead><tr>' +
+        '<th>created_at</th>' +
+        '<th>run_id</th>' +
+        '<th>status</th>' +
+        '<th>mode</th>' +
+        '<th>symbols</th>' +
+        '<th>tradability</th>' +
+        '<th>pdf</th>' +
+      '</tr></thead><tbody>';
+
+      for(const r of data){
+        const rid = r?.run_id || "";
+        const safeRid = String(rid).replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\\\\'");
+        const pdfPath = r?.result_ref?.pdf_path || r?.pdf_path;
+        const pdf = pdfPath ? "есть" : "—";
+        html += '<tr style="cursor:pointer" onclick="selectRunId(\\'' + safeRid + '\\')">' +
+          `<td>${escapeHtml(r?.created_at || "—")}</td>` +
+          `<td><b>${escapeHtml(rid)}</b></td>` +
+          `<td>${escapeHtml(r?.status || "—")}</td>` +
+          `<td>${escapeHtml(r?.mode || "—")}</td>` +
+          `<td>${escapeHtml((r?.symbols || []).join(","))}</td>` +
+          `<td>${escapeHtml(r?.tradability_status || "—")}</td>` +
+          `<td>${escapeHtml(pdf)}</td>` +
+        '</tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById("historyWrap").innerHTML = html;
+    } catch(e){
+      document.getElementById("historyWrap").innerHTML = "<div class='muted'>Ошибка: " + escapeHtml(e.message) + "</div>";
+      uiMessage("Ошибка history: " + e.message, "bad");
+    }
+  }
+
+  function selectRunId(runId){
+    if(!runId) return;
+    RUN_ID = runId;
+    document.getElementById("badgeRun").textContent = "run_id: " + RUN_ID;
+    document.getElementById("copyBtn").disabled = false;
+    uiMessage("✅ Выбран run_id из истории. Нажмите Refresh / Load Result.", "info");
+    refresh();
+  }
+
+  async function copyRunId(){
+    if(!RUN_ID) return;
+    try{
+      await navigator.clipboard.writeText(RUN_ID);
+      uiMessage("✅ run_id скопирован в буфер обмена.", "info");
+    } catch(e){
+      uiMessage("⚠️ Не удалось скопировать run_id (clipboard недоступен).", "warn");
     }
   }
 </script>
-
 </body>
 </html>
